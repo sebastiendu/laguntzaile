@@ -36,12 +36,12 @@ psql -f data/vues.sql laguntzaile
 
 Ensuite pour tester (optionnel) :
 
-```bash
+```Bash
 # Rentrer dans la base pour accéder aux données
 psql laguntzaile
 ```
 
-```postgresql
+```SqlPostgresql
 -- taper une requête
 select * from evenement;
 
