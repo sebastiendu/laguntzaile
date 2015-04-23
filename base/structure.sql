@@ -51,15 +51,15 @@ create table personne(
  adresse varchar not null,
  code_postal varchar not null,
  ville varchar not null,
- portable varchar,
- domicile varchar,
- email varchar,
+ portable varchar not null,
+ domicile varchar not null,
+ email varchar not null,
  date_naissance date,
- profession varchar,
- competences varchar,
- avatar varchar, -- ?
- langues varchar,
- commentaire varchar,
+ profession varchar not null,
+ competences varchar not null,
+ avatar varchar not null, -- ?
+ langues varchar not null,
+ commentaire varchar not null,
  constraint "Le nom de la personne doit être renseigné" check (nom <> ''),
  constraint "Il faut un moyen de contact (email ou téléphone)" check (email <> '' or domicile <> '' or portable <> '')
 );
@@ -84,10 +84,10 @@ create table disponibilite(
  date_inscription timestamp,
  -- TODO: faut-il responsable boolean not null default false,
  jours_et_heures_dispo text not null,
- liste_amis text,
- type_poste text,
- commentaire text,
- statut text not null default 'proposee'
+ liste_amis text not null,
+ type_poste text not null,
+ commentaire text not null,
+ statut varchar not null default 'proposee'
 );
 create index on disponibilite(date_inscription);
 create index on disponibilite(statut);
@@ -105,7 +105,7 @@ create table affectation(
  id_disponibilite int not null references disponibilite,
  id_tour int not null references tour,
  date_et_heure_proposee timestamp,
- statut  text not null default 'possible',
+ statut varchar not null default 'possible',
  -- TODO: faut-il responsable boolean not null default false,
  commentaire text not null
 );
