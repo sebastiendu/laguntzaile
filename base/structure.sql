@@ -24,7 +24,8 @@ create table poste(
  id_evenement int references evenement,
  nom varchar not null,
  description text not null,
- position point not null, -- ou polygone, à voir
+ posX number not null, -- ou polygone, à voir
+ posY number not null,
  constraint "Le nom du poste doit être renseigné" check (nom <> '')
 );
 
@@ -50,15 +51,15 @@ create table personne(
  adresse varchar not null,
  code_postal varchar not null,
  ville varchar not null,
- portable varchar not null,
- domicile varchar not null,
- email varchar not null,
+ portable varchar,
+ domicile varchar,
+ email varchar,
  date_naissance date,
- profession varchar not null,
- competences varchar not null,
- avatar varchar not null, -- ?
- langues varchar not null,
- commentaire varchar not null,
+ profession varchar,
+ competences varchar,
+ avatar varchar, -- ?
+ langues varchar,
+ commentaire varchar,
  constraint "Le nom de la personne doit être renseigné" check (nom <> ''),
  constraint "Il faut un moyen de contact (email ou téléphone)" check (email <> '' or domicile <> '' or portable <> '')
 );
@@ -80,31 +81,31 @@ create table disponibilite(
  id serial primary key,
  id_personne int not null references personne,
  id_evenement int not null references evenement,
- date_inscription date,
+ date_inscription timestamp,
  -- TODO: faut-il responsable boolean not null default false,
  jours_et_heures_dispo text not null,
- liste_amis text not null,
- type_poste text not null,
- commentaire text not null,
- statut statut_disponibilite not null default 'proposee'
+ liste_amis text,
+ type_poste text,
+ commentaire text,
+ statut text not null default 'proposee'
 );
 create index on disponibilite(date_inscription);
 create index on disponibilite(statut);
 
 create type statut_affectation AS enum (
- 'possible',
- 'annulee',
- 'validee',
- 'proposee',
- 'acceptee',
- 'rejetee'
+ 'possible', -- Tant qu'on a pas soumis
+ 'annulee', -- Par le responsable
+ 'validee', -- Forcée
+ 'proposee', -- Envoyé par mail
+ 'acceptee', -- Par le bénévole
+ 'rejetee' -- par le bénév
 );
 create table affectation(
  id serial primary key,
  id_disponibilite int not null references disponibilite,
  id_tour int not null references tour,
  date_et_heure_proposee timestamp,
- statut statut_affectation not null default 'possible',
+ statut  text not null default 'possible',
  -- TODO: faut-il responsable boolean not null default false,
  commentaire text not null
 );
