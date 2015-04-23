@@ -22,6 +22,6 @@ sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) a
 FROM poste
 join tour on poste.id = tour.id_poste
 join affectation on tour.id = affectation.id_tour
-GROUP BY poste.id, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, tour.id tour.fin,tour.min, tour.max
+GROUP BY poste.id, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, tour.id, tour.fin,tour.min, tour.max
 
 
