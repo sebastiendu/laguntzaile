@@ -72,11 +72,6 @@ create index on personne(domicile);
 create index on personne(email);
 create index on personne(date_naissance);
 
-create type statut_disponibilite AS enum (
- 'proposee',
- 'validee',
- 'rejetee'
-);
 create table disponibilite(
  id serial primary key,
  id_personne int not null references personne,
@@ -87,25 +82,28 @@ create table disponibilite(
  liste_amis text not null,
  type_poste text not null,
  commentaire text not null,
- statut varchar not null default 'proposee'
+ statut varchar not null default 'proposee' check statut in (
+  'proposee', -- par le bénévole au responsable (candidature)
+  'validee', -- par le responsable (le bénévole devient disponible)
+  'rejetee' -- par le responsable
+ )
 );
 create index on disponibilite(date_inscription);
 create index on disponibilite(statut);
 
-create type statut_affectation AS enum (
- 'possible', -- Tant qu'on a pas soumis
- 'annulee', -- Par le responsable
- 'validee', -- Forcée
- 'proposee', -- Envoyé par mail
- 'acceptee', -- Par le bénévole
- 'rejetee' -- par le bénév
-);
 create table affectation(
  id serial primary key,
  id_disponibilite int not null references disponibilite,
  id_tour int not null references tour,
  date_et_heure_proposee timestamp,
- statut varchar not null default 'possible',
+ statut varchar not null default 'possible' check statut in (
+  'possible', -- Tant qu'on a pas soumis
+  'annulee', -- Par le responsable
+  'validee', -- Forcée
+  'proposee', -- Envoyé par mail
+  'acceptee', -- Par le bénévole
+  'rejetee' -- par le bénév
+ ),
  -- TODO: faut-il responsable boolean not null default false,
  commentaire text not null
 );
