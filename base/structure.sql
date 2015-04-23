@@ -2,7 +2,6 @@ begin;
 
 
 drop table if exists evenement, poste, tour, personne, disponibilite, affectation, evenement_du_systeme cascade;
-drop type if exists statut_disponibilite, statut_affectation;
 
 create table evenement(
  id serial primary key,
@@ -24,8 +23,8 @@ create table poste(
  id_evenement int references evenement,
  nom varchar not null,
  description text not null,
- posX number not null, -- ou polygone, à voir
- posY number not null,
+ posX decimal not null, -- ou polygone, à voir
+ posY decimal not null,
  constraint "Le nom du poste doit être renseigné" check (nom <> '')
 );
 
@@ -82,11 +81,11 @@ create table disponibilite(
  liste_amis text not null,
  type_poste text not null,
  commentaire text not null,
- statut varchar not null default 'proposee' check statut in (
+ statut varchar not null default 'proposee' check (statut in (
   'proposee', -- par le bénévole au responsable (candidature)
   'validee', -- par le responsable (le bénévole devient disponible)
   'rejetee' -- par le responsable
- )
+ ))
 );
 create index on disponibilite(date_inscription);
 create index on disponibilite(statut);
@@ -96,14 +95,14 @@ create table affectation(
  id_disponibilite int not null references disponibilite,
  id_tour int not null references tour,
  date_et_heure_proposee timestamp,
- statut varchar not null default 'possible' check statut in (
+ statut varchar not null default 'possible' check (statut in (
   'possible', -- Tant qu'on a pas soumis
   'annulee', -- Par le responsable
   'validee', -- Forcée
   'proposee', -- Envoyé par mail
   'acceptee', -- Par le bénévole
   'rejetee' -- par le bénév
- ),
+ )),
  -- TODO: faut-il responsable boolean not null default false,
  commentaire text not null
 );
