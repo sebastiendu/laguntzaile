@@ -29,7 +29,8 @@ select
  id_poste,
  poste.nom as nom_poste,
  poste.description as description_poste,
- poste.position as position_poste,
+ poste.posX as posX_poste,
+ poste.posY as posY_poste,
  id_tour,
  tour.debut as debut_tour,
  tour.fin as fin_tour,
@@ -156,7 +157,8 @@ select
  id_poste,
  poste.nom as nom_poste,
  poste.description as description_poste,
- poste.position as position_poste,
+ poste.posX as posX_poste,
+ poste.posY as posY_poste,
  id_tour,
  tour.debut as debut_tour,
  tour.fin as fin_tour,
@@ -227,7 +229,8 @@ select
  id_poste,
  poste.nom as nom_poste,
  poste.description as description_poste,
- poste.position as position_poste,
+ poste.posX as posX_poste,
+ poste.posY as posY_poste,
  id_tour,
  tour.debut as debut_tour,
  tour.fin as fin_tour,
@@ -245,7 +248,7 @@ order by disponibilite.id_evenement, personne.nom, personne.prenom, personne.vil
 -- Gestion des postes et tours
 
 create or replace view postes as -- utile ?
-select id, id_evenement, nom, description, position
+select id, id_evenement, nom, description, posX, posY
 from poste
 order by id_evenement, nom;
 
@@ -455,7 +458,8 @@ min,
 max,
 poste.nom as nom_poste,
 poste.description as description_poste,
-poste.position as position_poste
+poste.posX as posX_poste,
+poste.posY as posY_poste
 from disponibilite
  left join affectation on id_disponibilite = disponibilite.id
   left join tour on id_tour = tour.id
@@ -472,7 +476,7 @@ select
  eds.id_tour,
  action,
  debut, fin, min, max,
- nom, description, position
+ nom, description, posX, posY
 from evenement_du_systeme eds
  join disponibilite on id_disponibilite = disponibilite.id
  left join affectation on id_affectation = affectation.id
