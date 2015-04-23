@@ -42,9 +42,9 @@ psql laguntzaile
 ```
 
 ```postgresql
-# taper une requête
+-- taper une requête
 select * from evenement;
 
-# pour apprendre à se servir de psql
+-- pour apprendre à se servir de psql
 help
 ```
