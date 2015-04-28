@@ -26,3 +26,6 @@
 *.exe
 *.out
 *.app
+
+# Dump de la base
+dump.sql.gz
