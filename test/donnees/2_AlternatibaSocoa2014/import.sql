@@ -47,13 +47,14 @@ select 2,random(),random(),nom,lieu,ref
 from import_poste;
 
 alter table tour add column ref varchar;
-insert into tour (id_poste, debut, fin, min, max)
+insert into tour (id_poste, debut, fin, min, max, ref)
 select
  poste.id,
  date '2014-10-05' + debut,
  date '2014-10-05' + fin,
  1,
- cast(max as integer)
+ cast(max as integer),
+ import_tour.ref
 from
  import_tour join poste on refposte = poste.ref;
 
