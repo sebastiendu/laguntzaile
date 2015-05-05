@@ -11,7 +11,7 @@ create table evenement(
  fin timestamp with time zone not null,
  lieu varchar not null,
  plan text, -- document SVG
- id_evenement_precedent int references evenement,
+ id_evenement_precedent int references evenement on delete set null,
  constraint "Le nom de l'évenement doit être renseigné" check (nom <> ''),
  constraint "Le début de l'évènement ne peut pas être après sa fin" check (debut <= fin)
 );
@@ -20,7 +20,7 @@ create index on evenement(debut);
 
 create table poste(
  id serial primary key,
- id_evenement int references evenement,
+ id_evenement int references evenement on delete cascade,
  nom varchar not null,
  description text not null,
  posX decimal not null, -- ou polygone, à voir
@@ -30,7 +30,7 @@ create table poste(
 
 create table tour(
  id serial primary key,
- id_poste int references poste,
+ id_poste int references poste on delete cascade,
  debut timestamp with time zone not null,
  fin timestamp with time zone not null,
  min int not null,
@@ -73,8 +73,8 @@ create index on personne(date_naissance);
 
 create table disponibilite(
  id serial primary key,
- id_personne int not null references personne,
- id_evenement int not null references evenement,
+ id_personne int not null references personne on delete cascade,
+ id_evenement int not null references evenement on delete cascade,
  date_inscription timestamp,
  -- TODO: faut-il responsable boolean not null default false,
  jours_et_heures_dispo text not null,
@@ -92,8 +92,8 @@ create index on disponibilite(statut);
 
 create table affectation(
  id serial primary key,
- id_disponibilite int not null references disponibilite,
- id_tour int not null references tour,
+ id_disponibilite int not null references disponibilite on delete cascade,
+ id_tour int not null references tour on delete cascade,
  date_et_heure_proposee timestamp,
  statut varchar not null default 'possible' check (statut in (
   'possible', -- Tant qu'on a pas soumis
@@ -111,12 +111,12 @@ create index on affectation(statut);
 create table evenement_du_systeme(
  id serial primary key,
  date_et_heure timestamp not null,
- id_affectation int references affectation,
- id_evenement int references evenement,
- id_personne int references personne,
- id_poste int references poste,
- id_tour int references tour,
- id_disponibilite int references disponibilite,
+ id_affectation int references affectation on delete set null,
+ id_evenement int references evenement on delete set null,
+ id_personne int references personne on delete set null,
+ id_poste int references poste on delete set null,
+ id_tour int references tour on delete set null,
+ id_disponibilite int references disponibilite on delete set null,
  action varchar not null,
  constraint "Une action est requise sur chaque ligne du log" check (action <> '')
 );
