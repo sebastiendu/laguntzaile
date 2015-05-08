@@ -69,5 +69,5 @@ help
 L'environnement de développement Qt5 est empaqueté dans Debian 8 (Jessie), mais il lui manque un meta-paquet qui dépendrait de tous les paquets requis.
 
 ```Bash
-apt-get install g++ qtcreator qml qmlscene qt5-doc-html $(aptitude -F %p search '?source-version(5.3.2) ?architecture(amd64) !~i ?name(qt) !?name(dbg)') 
+apt-get install g++ qtcreator $(aptitude -F %p search '?source-package(qt.*-opensource-src) !~ri386 !~i')
 ```
