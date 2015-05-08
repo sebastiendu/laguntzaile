@@ -599,8 +599,8 @@ sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affec
 sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees
 
 FROM poste
-join tour on poste.id = id_poste
-join affectation on tour.id = id_tour
+left join tour on poste.id = id_poste
+left join affectation on tour.id = id_tour
 GROUP BY id_poste, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, id_tour, tour.fin,tour.min, tour.max;
 
 
