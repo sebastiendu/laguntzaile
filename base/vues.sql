@@ -582,14 +582,14 @@ group by heure;
 
 create or replace view poste_et_tour as -- pour affichage du plan
 select
-id_poste,
+poste.id as id_poste,
 poste.id_evenement,
 poste.nom,
 poste.description,
 poste.posx,
 poste.posy,
 tour.debut,
-id_tour,
+tour.id as id_tour,
 tour.fin,
 tour.min,
 tour.max,
@@ -601,7 +601,7 @@ sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) a
 FROM poste
 left join tour on poste.id = id_poste
 left join affectation on tour.id = id_tour
-GROUP BY id_poste, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, id_tour, tour.fin,tour.min, tour.max;
+GROUP BY poste.id, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, tour.id, tour.fin,tour.min, tour.max;
 
 
 -- Demandes de validation des affectations
