@@ -32,8 +32,29 @@ create temporary table import_affectation(
 );
 \copy import_affectation from 'affectation.csv' (format csv, header, null 'null');
 
-insert into evenement(id, nom, debut, fin, lieu) values
-(2, 'Alternatiba Socoa 2014', '2014-10-05 06:00:00', '2014-10-06 00:00:00', 'Ciboure');
+create or replace function bytea_import(p_path text, p_result out bytea)
+ language plpgsql as $$
+ declare
+  l_oid oid;
+  r record;
+ begin
+  p_result := '';
+  select lo_import(p_path) into l_oid;
+  for r in (
+   select data from pg_largeobject
+    where loid = l_oid
+    order by pageno
+  ) loop
+   p_result = p_result || r.data;
+  end loop;
+  perform lo_unlink(l_oid);
+end;$$;
+\set pwd `pwd`
+insert into evenement(id, nom, debut, fin, lieu, plan) values
+(2, 'Alternatiba Socoa 2014', '2014-10-05 06:00:00', '2014-10-06 00:00:00', 'Ciboure',
+ convert_from(bytea_import(:'pwd'||'/'||'plan.svg'), 'utf8')::xml
+);
+drop function bytea_import(text);
 
 alter table personne add column ref varchar;
 insert into personne

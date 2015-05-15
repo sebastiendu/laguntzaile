@@ -162,8 +162,29 @@ $$ language plpgsql;
 
 select remplir_import_tour();
 
-insert into evenement(id, nom, debut, fin, lieu) values
-(1, 'Lurrama 2014', '2014-11-12 09:00:00', '2014-11-17 17:00:00', 'Biarritz');
+create or replace function bytea_import(p_path text, p_result out bytea)
+ language plpgsql as $$
+ declare
+  l_oid oid;
+  r record;
+ begin
+  p_result := '';
+  select lo_import(p_path) into l_oid;
+  for r in (
+   select data from pg_largeobject
+    where loid = l_oid
+    order by pageno
+  ) loop
+   p_result = p_result || r.data;
+  end loop;
+  perform lo_unlink(l_oid);
+end;$$;
+\set pwd `pwd`
+insert into evenement(id, nom, debut, fin, lieu, plan) values
+(1, 'Lurrama 2014', '2014-11-12 09:00:00', '2014-11-17 17:00:00', 'Biarritz',
+ convert_from(bytea_import(:'pwd'||'/'||'plan.svg'), 'utf8')::xml
+);
+drop function bytea_import(text);
 
 insert into poste(id_evenement, posX, posY, nom, description)
 values

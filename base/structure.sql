@@ -10,7 +10,7 @@ create table evenement(
  debut timestamp with time zone not null,
  fin timestamp with time zone not null,
  lieu varchar not null,
- plan text, -- document SVG
+ plan xml, -- document SVG
  id_evenement_precedent int references evenement on delete set null,
  constraint "Le nom de l'évenement doit être renseigné" check (nom <> ''),
  constraint "Le début de l'évènement ne peut pas être après sa fin" check (debut <= fin)
