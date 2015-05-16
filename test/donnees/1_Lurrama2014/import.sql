@@ -188,12 +188,11 @@ drop function bytea_import(text);
 
 insert into poste(id_evenement, posX, posY, nom, description)
 values
-(1, random(), random(), 'Montage', ''), -- id = 1
-(1, random(), random(), 'Démontage', ''); -- id = 2
-
+(1, 0, 0, 'Montage', ''), -- id = 1
+(1, 0, 0, 'Démontage', ''); -- id = 2
 
 insert into poste(id_evenement, posX, posY, nom, description)
-select 1,random(),random(),poste,''
+select 1,0,0,poste,''
 from import_tour
 group by poste;
 
@@ -283,3 +282,10 @@ drop function remplir_affectation();
 drop function remplir_import_tour();
 drop function extraire_date_debut(date, varchar);
 drop function extraire_date_fin(date, varchar);
+
+create temporary table import_position (nom varchar not null primary key, x decimal not null, y decimal not null);
+\copy import_position from 'positions' (format text);
+update poste set
+ posX = (select x from import_position where nom = poste.nom),
+ posY = (select y from import_position where nom = poste.nom)
+where id_evenement=1;

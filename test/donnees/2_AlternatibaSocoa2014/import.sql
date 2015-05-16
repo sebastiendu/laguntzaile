@@ -64,7 +64,7 @@ from import_personne;
 
 alter table poste add column ref varchar;
 insert into poste(id_evenement, posX, posY, nom, description, ref)
-select 2,random(),random(),nom,lieu,ref
+select 2,0,0,nom,lieu,ref
 from import_poste;
 
 alter table tour add column ref varchar;
@@ -94,3 +94,10 @@ insert into affectation (id_disponibilite, id_tour, date_et_heure_proposee, stat
 alter table personne drop column ref;
 alter table poste drop column ref;
 alter table tour drop column ref;
+
+create temporary table import_position (nom varchar not null primary key, x decimal not null, y decimal not null);
+\copy import_position from 'positions' (format text);
+update poste set
+ posX = (select x from import_position where nom = poste.nom),
+ posY = (select y from import_position where nom = poste.nom)
+where id_evenement=2;
