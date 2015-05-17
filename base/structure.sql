@@ -1,7 +1,7 @@
 begin;
 
 
-drop table if exists evenement, poste, tour, personne, disponibilite, affectation, evenement_du_systeme cascade;
+drop table if exists evenement, poste, tour, personne, disponibilite, affectation, lot, lot_personne, lot_affectation, evenement_du_systeme cascade;
 
 create table evenement(
  id serial primary key,
@@ -108,9 +108,39 @@ create table affectation(
 );
 create index on affectation(statut);
 
+create table lot(
+ id serial primary key,
+ date_de_creation timestamp not null default CURRENT_TIMESTAMP,
+ cle varchar not null,
+ traite boolean not null default false,
+ modele varchar
+);
+create index on lot(date_de_creation);
+create index on lot(traite);
+
+create table lot_personne(
+ id_lot int not null references lot on delete cascade,
+ id_personne int not null references personne on delete cascade,
+ traite boolean not null default false,
+ reussi boolean not null default false,
+ primary key(id_lot, id_personne)
+);
+create index on lot_personne(traite);
+create index on lot_personne(reussi);
+
+create table lot_affectation(
+ id_lot int not null references lot on delete cascade,
+ id_affectation int not null references affectation on delete cascade,
+ traite boolean not null default false,
+ reussi boolean not null default false,
+ primary key(id_lot, id_affectation)
+);
+create index on lot_affectation(traite);
+create index on lot_affectation(reussi);
+
 create table evenement_du_systeme(
  id serial primary key,
- date_et_heure timestamp not null,
+ date_et_heure timestamp not null default CURRENT_TIMESTAMP,
  id_affectation int references affectation on delete set null,
  id_evenement int references evenement on delete set null,
  id_personne int references personne on delete set null,
