@@ -132,9 +132,10 @@ select
  profession,
  competences,
  langues,
- personne.commentaire
+ personne.commentaire,
  date_inscription,
  liste_amis,
+ jours_et_heures_dispo,
  type_poste,
  disponibilite.commentaire as commentaire_disponibilite,
  statut
