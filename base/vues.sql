@@ -352,7 +352,7 @@ select
  disponibilite.commentaire as commentaire_disponibilite
 from disponibilite
  join personne on id_personne = personne.id
--- where statut = 'validé_par_candidat' -- FIXME TODO : diagramme état-transition d'une disponibilité
+ where statut = 'proposee'
 order by id_evenement, date_inscription, personne.nom;
 
 create or replace view personnes_doublons as -- repérage des doublons probables
