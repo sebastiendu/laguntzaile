@@ -110,10 +110,12 @@ create index on affectation(statut);
 
 create table lot(
  id serial primary key,
+ titre varchar not null,
  date_de_creation timestamp not null default CURRENT_TIMESTAMP,
- cle varchar not null,
+ cle int not null default ((2^31 - 1) * random())::integer,
  traite boolean not null default false,
- modele varchar
+ modele varchar,
+ expediteur varchar
 );
 create index on lot(date_de_creation);
 create index on lot(traite);
