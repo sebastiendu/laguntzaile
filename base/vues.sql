@@ -361,12 +361,13 @@ create or replace view personnes_doublons as -- repérage des doublons probables
    select nouveau.id as idnouveau, existant.id as id,
     nouveau.nom <> '' and lower(nouveau.nom) = lower(existant.nom) as memenom,
     nouveau.adresse <> '' and lower(nouveau.adresse) = lower(existant.adresse) as memeadresse,
-    coalesce(nouveau.ville = existant.ville, false) as memeville,
+    nouveau.ville <> '' and lower(nouveau.ville) = lower(existant.ville) as memeville,
     nouveau.email <> '' and lower(nouveau.email) = lower(existant.email) as memeemail,
-    nouveau.domicile <> '' and nouveau.domicile = existant.domicile as memedomicile,
-    nouveau.portable <> '' and nouveau.portable = existant.portable as memeportable,
-    coalesce(nouveau.prenom <> '' and lower(nouveau.prenom) = lower(existant.prenom), false) as memeprenom
+    nouveau.domicile <> '' and lower(nouveau.domicile) = lower(existant.domicile) as memedomicile,
+    nouveau.portable <> '' and lower(nouveau.portable) = lower(existant.portable) as memeportable,
+    nouveau.prenom <> '' and lower(nouveau.prenom) = lower(existant.prenom) as memeprenom
    from personne nouveau, personne existant
+   where nouveau.id <> existant.id
   )
   select *, (
    3 * memenom::integer +
@@ -379,7 +380,7 @@ create or replace view personnes_doublons as -- repérage des doublons probables
   ) / 16.0 as score
   from correspondance
  )
- select *
+ select iddoublon.*, nom, prenom, ville
  from iddoublon join personne using(id)
  where score > 0
  order by score desc, nom, prenom, ville;
