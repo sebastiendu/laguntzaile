@@ -505,6 +505,7 @@ order by id_personne, fin desc, debut desc;
 create or replace view taux_de_remplissage_tour as
 with etat_tour as (
  select
+  id_poste,
   id_tour,
   min,
   max,
@@ -516,6 +517,7 @@ with etat_tour as (
   left join statistiques_tour on id_tour = tour.id
 )
 select
+ id_poste,
  id_tour,
  min,
  max,
