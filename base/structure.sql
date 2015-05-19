@@ -70,6 +70,13 @@ create index on personne(portable);
 create index on personne(domicile);
 create index on personne(email);
 create index on personne(date_naissance);
+create index on personne(lower(nom));
+create index on personne(lower(adresse));
+create index on personne(lower(ville));
+create index on personne(lower(email));
+create index on personne(lower(domicile));
+create index on personne(lower(portable));
+create index on personne(lower(prenom));
 
 create table disponibilite(
  id serial primary key,
