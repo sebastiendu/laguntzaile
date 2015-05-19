@@ -101,3 +101,19 @@ update poste set
  posX = (select x from import_position where nom = poste.nom),
  posY = (select y from import_position where nom = poste.nom)
 where id_evenement=2;
+
+update disponibilite
+set statut=case (random() * 3)::integer
+ when 0 then 'proposee'
+ when 1 then 'rejetee'
+ else 'validee' end
+where id not in (select id_disponibilite from affectation);
+
+update affectation
+set statut=case (random() * 10)::integer
+ when 0 then 'possible'
+ when 1 then 'annulee'
+ when 2 then 'validee'
+ when 3 then 'proposee'
+ when 4 then 'rejetee'
+ else 'acceptee' end;
