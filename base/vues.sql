@@ -598,8 +598,8 @@ tour.max,
 count(affectation.id)  as nombre_affectations,
 sum(case when affectation.statut = 'possible' then 1 else 0 end) as nombre_affectations_possibles,
 sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affectations_proposees,
-sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees
-
+sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees,
+sum(case when affectation.statut in ('rejetee', 'annulee') then 1 else 0 end) as nombre_affectations_rejetees_ou_annulees
 FROM poste
 left join tour on poste.id = id_poste
 left join affectation on tour.id = id_tour
