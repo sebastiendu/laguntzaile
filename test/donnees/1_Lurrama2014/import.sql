@@ -305,3 +305,12 @@ set statut=case (random() * 10)::integer
  when 3 then 'proposee'
  when 4 then 'rejetee'
  else 'acceptee' end;
+
+update poste
+set autonome=round(random())::integer::boolean
+where id_evenement=1;
+
+insert into responsable(id_personne, id_poste)
+ select personne.id, poste.id
+ from personne, poste
+ where id_evenement=1 and random() < .001;
