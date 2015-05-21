@@ -22,7 +22,7 @@ create temporary table import(
 
 \copy import from '2014.csv' (format csv, header, null 'null');
 
-update import set domicile = '05 59 37 95 72' where portable='' and domicile='' and email='';
+update import set domicile = '05 59 37 ' || lpad((random()*10000)::integer::text, 4, '0') where portable='' and domicile='' and email='';
 update import set nom = 'Quelqu''un' where nom='';
 
 create function extraire_date_debut (date, varchar) returns timestamp as $$
@@ -210,7 +210,7 @@ from
 
 insert into personne
 (nom, prenom, adresse, code_postal, ville, portable, domicile, email, date_naissance, profession, competences, langues, commentaire, avatar)
-select nom, prenom, adresse, cp, ville, domicile, portable, email,
+select nom, prenom, adresse, cp, ville, portable, domicile, email,
 case when age = '' then null else
  date '2014-10-01' - (cast('0'||age as integer) * interval '1 year')
 end
