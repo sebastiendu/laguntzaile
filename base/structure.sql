@@ -1,7 +1,7 @@
 begin;
 
 
-drop table if exists evenement, poste, tour, personne, disponibilite, affectation, lot, lot_personne, lot_affectation, evenement_du_systeme cascade;
+drop table if exists evenement, poste, tour, personne, responsable, disponibilite, affectation, lot, lot_personne, lot_affectation, evenement_du_systeme cascade;
 
 create table evenement(
  id serial primary key,
@@ -25,8 +25,10 @@ create table poste(
  description text not null,
  posX decimal not null, -- ou polygone, à voir
  posY decimal not null,
+ autonome boolean not null default false,
  constraint "Le nom du poste doit être renseigné" check (nom <> '')
 );
+create index on poste(autonome);
 
 create table tour(
  id serial primary key,
@@ -78,20 +80,27 @@ create index on personne(lower(domicile));
 create index on personne(lower(portable));
 create index on personne(lower(prenom));
 
+create table responsable(
+ id serial primary key,
+ id_personne int not null references personne on delete cascade,
+ id_poste int not null references poste on delete cascade,
+ unique(id_personne, id_poste)
+);
+
 create table disponibilite(
  id serial primary key,
  id_personne int not null references personne on delete cascade,
  id_evenement int not null references evenement on delete cascade,
+ unique(id_personne, id_evenement),
  date_inscription timestamp,
- -- TODO: faut-il responsable boolean not null default false,
  jours_et_heures_dispo text not null,
  liste_amis text not null,
  type_poste text not null,
  commentaire text not null,
  statut varchar not null default 'proposee' check (statut in (
-  'proposee', -- par le bénévole au responsable (candidature)
-  'validee', -- par le responsable (le bénévole devient disponible)
-  'rejetee' -- par le responsable
+  'proposee', -- par le candidat
+  'validee', -- le candidat devient disponible
+  'rejetee' -- par l'administrateur (doublon, spam ou autre raison)
  ))
 );
 create index on disponibilite(date_inscription);
@@ -101,16 +110,16 @@ create table affectation(
  id serial primary key,
  id_disponibilite int not null references disponibilite on delete cascade,
  id_tour int not null references tour on delete cascade,
+ unique(id_disponibilite,id_tour),
  date_et_heure_proposee timestamp,
  statut varchar not null default 'possible' check (statut in (
   'possible', -- Tant qu'on a pas soumis
-  'annulee', -- Par le responsable
+  'annulee', -- par l'administrateur
   'validee', -- Forcée
   'proposee', -- Envoyé par mail
   'acceptee', -- Par le bénévole
   'rejetee' -- par le bénév
  )),
- -- TODO: faut-il responsable boolean not null default false,
  commentaire text not null
 );
 create index on affectation(statut);
