@@ -529,7 +529,7 @@ select *,
  case when besoin > 0 then 100 * besoin / min
       when besoin < 0 then 100 * besoin / max
       else 0 end as faim,
- effectif / ((min+max)/2) as taux
+ 100 * effectif / ((min+max)/2) as taux
 from besoin_par_tour;
 
 create or replace view compatibilite_tour_disponibilite as
