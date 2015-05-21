@@ -9,10 +9,10 @@ create or replace view statistiques_evenement as
 select id_evenement,
  count(distinct id_poste) as nombre_postes,
  count(distinct tour.id)  as nombre_tours,
- count(*) as nombre_affectations
+ count(affectation.id) as nombre_affectations
 from poste
- join tour on id_poste = poste.id
- join affectation on id_tour = tour.id
+ left join tour on id_poste = poste.id
+ left join affectation on id_tour = tour.id
 group by id_evenement;
 
 
@@ -41,12 +41,12 @@ select
  initcap(personne.prenom) as prenom_personne,
  personne.ville,
  personne.portable
-from affectation
- join tour on id_tour = tour.id
-  join poste on id_poste = poste.id
-   join evenement on poste.id_evenement = evenement.id
- join disponibilite on id_disponibilite = disponibilite.id
-  join personne on personne.id = id_personne
+from evenement
+ left join poste on id_evenement = evenement.id
+  left join tour on id_poste = poste.id
+   left join affectation on id_tour = tour.id
+    join disponibilite on id_disponibilite = disponibilite.id
+     join personne on id_personne = personne.id
 order by id_evenement, poste.nom, tour.debut, tour.fin, personne.nom, personne.prenom;
 
 create or replace view carte_de_benevole_inscriptions_postes as
@@ -87,30 +87,38 @@ select
  evenement.debut as debut_evenement,
  evenement.fin as fin_evenement,
  evenement.lieu as lieu_evenement,
- id_poste,
+ poste.id as id_poste,
  poste.nom as nom_poste,
- id_tour,
+ tour.id as id_tour,
  tour.debut as debut_tour,
  tour.fin as fin_tour,
  tour.min,
  tour.max,
- count(*) as nombre_affectations,
+ count(affectation.id) as nombre_affectations,
  string_agg(
   concat_ws(' ',
    upper(personne.nom),
    initcap(personne.prenom)
   ),
   ', '
- ) as liste_personnes
--- TODO : nom du responsable (leur demander d'abord si "responsable" fait référence au poste, au tour ou à la personne (disponibilite)
-from affectation
- join tour on id_tour = tour.id
-  join poste on id_poste = poste.id
-   join evenement on poste.id_evenement = evenement.id
- join disponibilite on id_disponibilite = disponibilite.id
-  join personne on id_personne = personne.id
-group by poste.id_evenement, evenement.nom, evenement.debut, evenement.fin, evenement.lieu, id_poste, poste.nom, id_tour, tour.debut, tour.fin, tour.min, tour.max
-order by poste.id_evenement, tour.debut, tour.fin; -- FIXME : order by personne.nom, personne.prenom
+ ) as liste_personnes,
+ string_agg(
+  concat_ws(' ',
+   upper(personne_responsable.nom),
+   initcap(personne_responsable.prenom)
+  ),
+  ', '
+ ) as liste_responsables
+from evenement
+ left join poste on id_evenement = evenement.id
+  left join responsable on id_poste = poste.id
+   join personne as personne_responsable on id_personne = personne_responsable.id
+  left join tour on tour.id_poste = poste.id
+   left join affectation on id_tour = tour.id
+    join disponibilite on id_disponibilite = disponibilite.id
+     join personne on disponibilite.id_personne = personne.id
+group by evenement.id, evenement.nom, evenement.debut, evenement.fin, evenement.lieu, poste.id, poste.nom, tour.id, tour.debut, tour.fin, tour.min, tour.max
+order by evenement.id, tour.debut, tour.fin; -- FIXME : order by personne.nom, personne.prenom
 
 create or replace view fiches_a_probleme as
 select
@@ -149,26 +157,26 @@ where disponibilite.id not in (
 
 create or replace view export_general_tours as
 select
- poste.id_evenement,
+ evenement.id as id_evenement,
  evenement.nom as nom_evenement,
  evenement.debut as debut_evenement,
  evenement.fin as fin_evenement,
  evenement.lieu as lieu_evenement,
  date_trunc('day', tour.debut) as jour,
- id_poste,
+ poste.id as id_poste,
  poste.nom as nom_poste,
  poste.description as description_poste,
  poste.posX as posX_poste,
  poste.posY as posY_poste,
- id_tour,
+ tour.id as id_tour,
  tour.debut as debut_tour,
  tour.fin as fin_tour,
  tour.min,
  tour.max,
  affectation.id as id_affectation,
  affectation.statut as statut_affectation,
- affectation.commentaire
- id_personne,
+ affectation.commentaire as commentaire_affectation,
+ personne.id as id_personne,
  upper(personne.nom) as nom_personne,
  initcap(personne.prenom) as prenom_personne,
  adresse,
@@ -188,12 +196,12 @@ select
  type_poste,
  disponibilite.commentaire as commentaire_disponibilite,
  disponibilite.statut
-from affectation
- join tour on id_tour = tour.id
-  join poste on id_poste = poste.id
-   join evenement on poste.id_evenement = evenement.id
- join disponibilite on id_disponibilite = disponibilite.id
-  join personne on id_personne = personne.id
+from tour
+ left join affectation on id_tour = tour.id
+  left join disponibilite on id_disponibilite = disponibilite.id
+   join personne on id_personne = personne.id
+ join poste on id_poste = poste.id
+  join evenement on poste.id_evenement = evenement.id
 order by poste.id_evenement, tour.debut, tour.fin, poste.nom, personne.nom, personne.prenom, personne.ville;
 
 create or replace view export_general_personnes as
@@ -256,9 +264,9 @@ order by id_evenement, nom;
 create or replace view statistiques_postes as
 select id_poste,
  count(distinct tour.id)  as nombre_tours,
- count(*) as nombre_affectations
+ count(affectation.id) as nombre_affectations
 from tour
- join affectation on id_tour = tour.id
+ left join affectation on id_tour = tour.id
 group by id_poste;
 
 create or replace view tours as -- utile ?
@@ -269,20 +277,20 @@ order by id_poste, debut, fin;
 create or replace view horaires_nouveau_tour as
 -- fin du plus recent tour ou debut evenement
 select
- id_poste,
- coalesce(max(tour.fin), evenement.fin) as debut,
- coalesce(max(tour.fin), evenement.fin) + interval '4 hours' as fin
+ poste.id as id_poste,
+ coalesce(max(tour.fin), evenement.debut) as debut,
+ coalesce(max(tour.fin), evenement.debut) + interval '4 hours' as fin
 from poste
  join evenement on id_evenement = evenement.id
  left join tour on id_poste = poste.id
-group by id_poste, evenement.fin;
+group by poste.id, evenement.debut;
 
 create or replace view statistiques_tour as
-select id_tour,
- count(*) as nombre_affectations
+select tour.id as id_tour,
+ count(affectation.id) as nombre_affectations
 from tour
- join affectation on id_tour = tour.id
-group by id_tour;
+ left join affectation on id_tour = tour.id
+group by tour.id;
 
 
 -- Candidature d'un bénévole
@@ -312,13 +320,8 @@ select
  group by id_evenement, evenement.nom, archive, evenement.debut, evenement.fin, lieu, id_evenement_precedent
  order by evenement.debut, evenement.fin;
 
--- TODO : Trouver une interface argonomique pour selectionner les anciens bénévoles,
+-- TODO : Trouver une interface ergonomique pour selectionner les anciens bénévoles,
 -- et créer des enregistrements dans la table sollicitation.
--- TODO : réfléchir à la contruction de l'adresse email du reply-to et/ou Return-path.
--- TODO : réfléchir au filtre d'insertion de l'URL identifiant
-
--- TODO : réfléchir à la sécurité : une fois la fiche mise à jour, il ne faut plus que l'URL puisse être utilisée à nouveau (vérifier disponibilité.statut)
-
 
 -- Candidature d'un bénévole sollicité
 
@@ -373,11 +376,11 @@ create or replace view personnes_doublons as -- repérage des doublons probables
    3 * memenom::integer +
    2 * memeadresse::integer +
    1 * memeville::integer +
-   3 * memeemail::integer +
-   3 * memedomicile::integer +
-   3 * memeportable::integer +
+   5 * memeemail::integer +
+   4 * memedomicile::integer +
+   5 * memeportable::integer +
    1 * memeprenom::integer
-  ) / 16.0 as score
+  ) / 21.0 as score
   from correspondance
  )
  select iddoublon.*, nom, prenom, ville
@@ -391,7 +394,13 @@ create or replace view personnes_doublons as -- repérage des doublons probables
 -- Afficher toutes les personnes avec l'indication pour chacun de sa présence dans la table disponibilité pour cet évenement
 
 create or replace view personnes_inscrite_ou_pas_encore as
-select id_evenement, personne.id as id_personne, disponibilite.id as id_disponibilite, personne.nom as nom_personne, prenom, ville -- et peut-être tous les autres champs de personne
+select
+ id_evenement,
+ personne.id as id_personne,
+ disponibilite.id as id_disponibilite,
+ personne.nom as nom_personne,
+ prenom,
+ ville -- et peut-être tous les autres champs de personne
 from personne left join disponibilite on id_personne = personne.id
 order by id_evenement, personne.nom, prenom, ville;
 
@@ -406,13 +415,13 @@ select
  upper(personne.nom) as nom_personne,
  initcap(personne.prenom) as prenom_personne,
  personne.ville,
- count(*) as nombre_affectations
+ count(affectation.id) as nombre_affectations
 from disponibilite
  join personne on id_personne = personne.id
  left join affectation on id_disponibilite = disponibilite.id
--- where disponibilite.statut = 'valide' -- TODO : revoir les statuts d'une disponibilité
+where disponibilite.statut = 'validee'
 group by id_evenement, disponibilite.id, id_personne, personne.nom, personne.prenom, personne.ville
-order by id_evenement, count(*) asc, personne.nom, personne.prenom, personne.ville;
+order by id_evenement, count(affectation.id) asc, personne.nom, personne.prenom, personne.ville;
 
 create or replace view fiche_benevole as
 select
@@ -433,7 +442,7 @@ select
  domicile,
  email,
  date_naissance,
- extract(year from age(date_naissance)) as age,
+ extract(year from age(date_naissance, (select debut from evenement where id=id_evenement))) as age,
  profession,
  competences,
  avatar,
@@ -503,33 +512,25 @@ order by id_personne, fin desc, debut desc;
 -- Couleurs des disponibilités en fonction du tour
 
 create or replace view taux_de_remplissage_tour as
-with etat_tour as (
- select
-  id_poste,
-  id_tour,
-  min,
-  max,
-  debut,
-  fin,
-  coalesce(nombre_affectations, 0) as effectif,
-  greatest(min - nombre_affectations, min) - greatest(nombre_affectations - max, 0) as besoin
- from tour
-  left join statistiques_tour on id_tour = tour.id
+with besoin_par_tour as (
+ with effectif_par_tour as (
+  select tour.*, count(affectation.id) as effectif
+  from tour left join affectation on id_tour = tour.id
+  where statut = 'validee' or statut = 'acceptee'
+  group by tour.id
+ )
+  select *,
+   case when effectif < min then min - effectif
+        when effectif > max then max - effectif
+        else 0 end as besoin
+  from effectif_par_tour
 )
-select
- id_poste,
- id_tour,
- min,
- max,
- debut,
- fin,
- effectif,
- besoin,
- case when besoin > 0 then besoin / min
-      when besoin < 0 then besoin / max
+select *,
+ case when besoin > 0 then 100 * besoin / min
+      when besoin < 0 then 100 * besoin / max
       else 0 end as faim,
  effectif / ((min+max)/2) as taux
-from etat_tour;
+from besoin_par_tour;
 
 create or replace view compatibilite_tour_disponibilite as
 with taux_de_compatibilite_entre_tours as (
@@ -642,7 +643,6 @@ order by poste.id_evenement, affectation.statut, date_et_heure_proposee;
 
 -- Sollicitation par email
 -- cf tours_benevole
--- TODO : generation de l'URL unique identifiant l'affectation ou la disponibilite
 
 
 -- Affectation ou refus de ses affectation par un bénévole
