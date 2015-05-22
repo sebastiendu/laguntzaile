@@ -649,4 +649,48 @@ order by poste.id_evenement, affectation.statut, date_et_heure_proposee;
 -- cf tours_benevole
 
 -- Consultation des tours à pourvoir ou de l'état de remplissage des tours
--- cf tableau_de_remplissage
+-- ("emploi du temps")
+create or replace view duree_evenement as
+ select id_evenement,
+  min(tour.debut) as debut,
+  max(tour.fin) as fin,
+  max(tour.fin) - min(tour.debut) as duree
+ from poste
+  left join tour on id_poste = poste.id
+ group by id_evenement;
+create or replace view intervalle_sequence_evenement as
+ select *,
+  case
+   when duree < interval '12 hours'
+    then interval '1 hour'
+   when duree < '1 day'
+    then interval '6 hours'
+   when duree < '1 week'
+    then interval '1 day'
+   else interval '1 week'
+  end as intervalle
+ from duree_evenement;
+create or replace view sequence_evenement as
+ select *,
+  generate_series(
+   to_timestamp(
+    extract(epoch from intervalle)
+    *
+    (extract(epoch from debut)/extract(epoch from intervalle))::integer
+   ) at time zone 'UTC',
+   fin,
+   intervalle
+  ) as debut_sequence,
+  extract(epoch from intervalle) / extract(epoch from duree) as proportion
+ from intervalle_sequence_evenement;
+create or replace view libelle_sequence_evenement as
+ select *,
+  debut_sequence + intervalle as fin_sequence,
+  to_char(debut_sequence,
+   case intervalle
+    when '1 hour' then 'FMHH24 h'
+    when '6 hours' then 'FMHH24 h'
+    when '1 day' then 'TMDay DD'
+    else 'Semaine WW'
+  end) as libelle_sequence
+ from sequence_evenement;

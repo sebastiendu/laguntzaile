@@ -7,8 +7,8 @@ create table evenement(
  id serial primary key,
  nom varchar not null,
  archive boolean not null default false,
- debut timestamp with time zone not null,
- fin timestamp with time zone not null,
+ debut timestamp not null,
+ fin timestamp not null,
  lieu varchar not null,
  plan xml, -- document SVG
  id_evenement_precedent int references evenement on delete set null,
@@ -33,8 +33,8 @@ create index on poste(autonome);
 create table tour(
  id serial primary key,
  id_poste int references poste on delete cascade,
- debut timestamp with time zone not null,
- fin timestamp with time zone not null,
+ debut timestamp not null,
+ fin timestamp not null,
  min int not null,
  max int not null,
  constraint "Le nombre minimum doit être positif" check (min > 0),
