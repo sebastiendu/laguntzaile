@@ -25,7 +25,6 @@ create temporary table import_tour(
 );
 \copy import_tour from 'tour.csv' (format csv, header, null 'null');
 update import_tour set max='100' where max='';
-update import_tour set fin='23:59:00' where fin < debut;
 create temporary table import_affectation(
 	refpersonne varchar not null,
 	reftour varchar not null
@@ -72,7 +71,7 @@ insert into tour (id_poste, debut, fin, min, max, ref)
 select
  poste.id,
  date '2014-10-05' + debut,
- date '2014-10-05' + fin,
+ case when fin < debut then date '2014-10-06' else date '2014-10-05' end + fin,
  1,
  cast(max as integer),
  import_tour.ref
