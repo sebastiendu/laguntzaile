@@ -516,7 +516,7 @@ with besoin_par_tour as (
  with effectif_par_tour as (
   select tour.*, count(affectation.id) as effectif
   from tour left join affectation on id_tour = tour.id
-  where statut = 'validee' or statut = 'acceptee'
+  where statut is null or statut = 'validee' or statut = 'acceptee'
   group by tour.id
  )
   select *,
@@ -650,6 +650,12 @@ order by poste.id_evenement, affectation.statut, date_et_heure_proposee;
 
 -- Consultation des tours à pourvoir ou de l'état de remplissage des tours
 -- ("emploi du temps")
+create or replace view postes_par_ordre_chronologique as
+ select poste.*
+ from poste left join tour on id_poste = poste.id
+ group by poste.id
+ order by min(debut), max(fin);
+
 create or replace view duree_evenement as
  select id_evenement,
   min(tour.debut) as debut,
@@ -658,39 +664,60 @@ create or replace view duree_evenement as
  from poste
   left join tour on id_poste = poste.id
  group by id_evenement;
+
 create or replace view intervalle_sequence_evenement as
  select *,
   case
-   when duree < interval '12 hours'
+   when duree < '20 hours'
     then interval '1 hour'
-   when duree < '1 day'
+   when duree < '3 day'
     then interval '6 hours'
    when duree < '1 week'
     then interval '1 day'
    else interval '1 week'
   end as intervalle
  from duree_evenement;
+
+create or replace view intervalle_sequence_et_debut_arrondi_evenement as
+ select *,
+  to_timestamp(
+   extract(epoch from intervalle)
+   *
+   (extract(epoch from debut)/extract(epoch from intervalle))::integer
+  ) at time zone 'UTC' as debut_arrondi
+ from intervalle_sequence_evenement;
+
+create or replace view intervalle_sequence_et_debut_et_duree_arrondis_evenement as
+ select *,
+  intervalle * (select count(*) from generate_series(debut_arrondi, fin, intervalle)) as duree_arrondie
+ from intervalle_sequence_et_debut_arrondi_evenement;
+
 create or replace view sequence_evenement as
  select *,
-  generate_series(
-   to_timestamp(
-    extract(epoch from intervalle)
-    *
-    (extract(epoch from debut)/extract(epoch from intervalle))::integer
-   ) at time zone 'UTC',
-   fin,
-   intervalle
-  ) as debut_sequence,
-  extract(epoch from intervalle) / extract(epoch from duree) as proportion
- from intervalle_sequence_evenement;
+  generate_series(debut_arrondi, fin, intervalle) as debut_sequence,
+  extract(epoch from intervalle) / extract(epoch from duree_arrondie) as proportion
+ from intervalle_sequence_et_debut_et_duree_arrondis_evenement;
+
 create or replace view libelle_sequence_evenement as
  select *,
   debut_sequence + intervalle as fin_sequence,
   to_char(debut_sequence,
    case intervalle
     when '1 hour' then 'FMHH24 h'
-    when '6 hours' then 'FMHH24 h'
+    when '6 hours' then 'FMHH24 h' -- TODO : nuit matin après-midi soir
     when '1 day' then 'TMDay DD'
     else 'Semaine WW'
   end) as libelle_sequence
  from sequence_evenement;
+
+create or replace view tours_emploi_du_temps as
+ select
+  id_poste,
+  t.id,
+  extract(epoch from t.debut - e.debut_arrondi) / extract(epoch from e.duree_arrondie) as position_relative,
+  extract(epoch from t.fin - t.debut) / extract(epoch from e.duree_arrondie) duree_relative,
+  min, max, t.debut, t.fin, effectif, besoin, faim, taux
+ from taux_de_remplissage_tour as t
+  join poste on poste.id = t.id_poste
+  join intervalle_sequence_et_debut_et_duree_arrondis_evenement as e using(id_evenement)
+ order by t.debut, t.fin;
