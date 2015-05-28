@@ -442,7 +442,7 @@ select
  domicile,
  email,
  date_naissance,
- extract(year from age(date_naissance, (select debut from evenement where id=id_evenement))) as age,
+ extract(year from age((select debut from evenement where id=id_evenement), date_naissance)) as age,
  profession,
  competences,
  avatar,
