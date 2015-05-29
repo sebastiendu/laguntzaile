@@ -333,6 +333,7 @@ select
 
 create or replace view candidatures_en_attente as
 select
+ disponibilite.id as id_disponibilite,
  id_evenement,
  id_personne,
  upper(personne.nom) as nom_personne,
