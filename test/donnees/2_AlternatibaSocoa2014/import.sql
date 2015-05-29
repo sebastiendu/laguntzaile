@@ -54,6 +54,7 @@ insert into evenement(id, nom, debut, fin, lieu, plan) values
  convert_from(bytea_import(:'pwd'||'/'||'plan.svg'), 'utf8')::xml
 );
 drop function bytea_import(text);
+select nextval('evenement_id_seq');
 
 alter table personne add column ref varchar;
 insert into personne
