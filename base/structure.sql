@@ -126,6 +126,7 @@ create index on affectation(statut);
 
 create table lot(
  id serial primary key,
+ id_evenement int not null references evenement on delete cascade,
  titre varchar not null,
  date_de_creation timestamp not null default CURRENT_TIMESTAMP,
  cle int not null default ((2^31 - 1) * random())::integer,
@@ -139,22 +140,14 @@ create index on lot(traite);
 create table lot_personne(
  id_lot int not null references lot on delete cascade,
  id_personne int not null references personne on delete cascade,
+ cle int not null default ((2^31 - 1) * random())::integer,
  traite boolean not null default false,
  reussi boolean not null default false,
+ erreur varchar,
  primary key(id_lot, id_personne)
 );
 create index on lot_personne(traite);
 create index on lot_personne(reussi);
-
-create table lot_affectation(
- id_lot int not null references lot on delete cascade,
- id_affectation int not null references affectation on delete cascade,
- traite boolean not null default false,
- reussi boolean not null default false,
- primary key(id_lot, id_affectation)
-);
-create index on lot_affectation(traite);
-create index on lot_affectation(reussi);
 
 create table evenement_du_systeme(
  id serial primary key,
