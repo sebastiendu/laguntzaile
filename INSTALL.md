@@ -71,3 +71,10 @@ L'environnement de développement Qt5 est empaqueté dans Debian 8 (Jessie), mai
 ```Bash
 apt-get install g++ qtcreator $(aptitude -F %p search '?source-package(qt.*-opensource-src) !~ri386 !~i')
 ```
+
+
+# Installation de l'environnement de développement du robot de courriel
+
+```Bash
+apt-get install libmimetic-dev libmimetic-doc
+```
