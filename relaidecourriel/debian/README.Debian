@@ -1,0 +1,10 @@
+relaidecourriel for Debian
+-------------------------
+
+Dans /etc/aliases, ajoutez une ligne comme celle-ci :
+
+prefixe: |/usr/sbin/relai_de_courriel
+
+en remplaçant prefixe par le préfixe que vous aurez choisi.
+
+ -- Sébastien Ducoulombier <seb@ldd.fr>  Fri, 22 Apr 2016 12:37:58 +0200

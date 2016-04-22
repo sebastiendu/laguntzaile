@@ -1,0 +1,16 @@
+Source: relaidecourriel
+Section: mail
+Priority: optional
+Maintainer: Sébastien Ducoulombier <seb@ldd.fr>
+Build-Depends: debhelper (>=9)
+Standards-Version: 3.9.7
+Homepage: https://github.com/sebastiendu/laguntzaile
+
+Package: relaidecourriel
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Relai de courriel du gestionnaire d'affectations
+ Robot qui reçoit les messages postés à un lot de destinataires et le relaie
+ vers les boites de courriel des personnes du lot.
+ Les personnes destinataires recoivent avec le message des liens cliquables.
+ Chacun des ces liens les amène à un formulaire web aux champs pré-remplis.
