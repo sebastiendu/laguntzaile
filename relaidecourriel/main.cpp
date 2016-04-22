@@ -92,7 +92,7 @@ bool preparer(MimeEntity* mimeEntity) {
 }
 
 void substituer(MimeEntity * mimeEntity, const string url, const string affectations, const string affectations_html) {
-    // Substitue _URL_ et _SUBSTITUTIONS_ dans toutes les parties text/plain et text/html
+    // Substitue _URL_ et _AFFECTATIONS_ dans toutes les parties text/plain et text/html
     ContentType contentType = mimeEntity->header().contentType();
     if (
             contentType.type() == "text" and (
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     // exemple : lurrama+1_315035469@ldd.fr
 
     // sur le serveur MX du domaine, dans /etc/alias, l'administrateur aura placé cette ligne :
-    // prefixe: |/usr/sbin/relai_de_courriel
+    // prefixe: |/usr/bin/relai_de_courriel
 
     // Les rêglages sont à faire dans un fichier de configuration sous /etc ou ~/.config
 
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
             cout << "5.1.1 Bad destination mailbox address" << endl;
             return EX_NOUSER;
         }
-        // marqué cet envoi comme pas réussi et renseigner l'erreur
+        // marquer cet envoi comme pas réussi et renseigner l'erreur
         QSqlQuery setLotPersonneEnErreur;
         if (!setLotPersonneEnErreur.prepare(
                     "update lot_personne"
@@ -306,13 +306,15 @@ int main(int argc, char *argv[])
        cout << "4.2.1 Mailbox disabled, not accepting messages" << endl;
        return EX_UNAVAILABLE;
     }
-//    if (query.value("date_de_creation").toDateTime().secsTo(QDateTime::currentDateTime()) > 24*60*60) {
-//        qCritical()
-//                << "Ce lot est périmé. Un lot ne reste valide que pendant 24 heures."
-//                << "Date de création de ce lot : " << query.value("date_de_creation");
-//        cout << "4.2.1 Mailbox disabled, not accepting messages" << endl;
-//        return EX_UNAVAILABLE;
-//    }
+#ifndef SKIP_DATE_TESTS
+    if (query_lot.value("date_de_creation").toDateTime().secsTo(QDateTime::currentDateTime()) > 24*60*60) {
+        qCritical()
+                << "Ce lot est périmé. Un lot ne reste valide que pendant 24 heures."
+                << "Date de création de ce lot : " << query_lot.value("date_de_creation");
+        cout << "4.2.1 Mailbox disabled, not accepting messages" << endl;
+        return EX_UNAVAILABLE;
+    }
+#endif
 
     // Lecture de l'évènement
     int id_evenement = query_lot.value("id_evenement").toInt();
@@ -338,14 +340,14 @@ int main(int argc, char *argv[])
         cout << "5.1.1 Bad destination mailbox address" << endl;
         return EX_NOUSER;
     }
-/*
+#ifndef SKIP_DATE_TESTS
     if (query_evenement.value("fin").toDateTime() < QDateTime::currentDateTime()) {
        qCritical()
                << "Cet évènement est déjà terminé.";
        cout << "4.2.1 Mailbox disabled, not accepting messages" << endl;
        return EX_UNAVAILABLE;
     }
-*/
+#endif
 
     // Le message lui-même est à lire sur l'entrée standard
 
