@@ -29,3 +29,7 @@
 
 # Dump de la base
 dump.sql.gz
+
+# Qt project
+build-*
+relaidecourriel/relaidecourriel.pro.user
