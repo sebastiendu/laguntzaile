@@ -2,7 +2,15 @@ Source: relaidecourriel
 Section: mail
 Priority: optional
 Maintainer: Sébastien Ducoulombier <seb@ldd.fr>
-Build-Depends: debhelper (>=9)
+Build-Depends: debhelper (>=9),
+ libgcc-5-dev,
+ libglib2.0-dev,
+ libicu-dev,
+ libmimetic-dev,
+ libpcre3-dev,
+ qtbase5-dev,
+ libstdc++-5-dev,
+ zlib1g-dev,
 Standards-Version: 3.9.7
 Homepage: https://github.com/sebastiendu/laguntzaile
 

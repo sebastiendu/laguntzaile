@@ -32,7 +32,7 @@ dump.sql.gz
 
 # Qt project
 build-*
-relaidecourriel/relaidecourriel.pro.user
+relaidecourriel/relaidecourriel.pro.user*
 
 # Paquets Debian
 relaidecourriel_*.dsc
@@ -40,3 +40,4 @@ relaidecourriel_*.tar.xz
 relaidecourriel_*_*.build
 relaidecourriel_*_*.changes
 relaidecourriel_*_*.deb
+relaidecourriel-dbgsym_*_*.deb
