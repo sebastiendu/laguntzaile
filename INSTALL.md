@@ -15,9 +15,9 @@ su - postgres
 
 # créer un compte utilisateur (pour l'accès à la base)
 # remplacez seb par votre nom d'utilisateur, ci-dessous.
-# createuser vous demandera de saisir un mot de passe
-# vous devriez pouvoir créer d'autres rôles
-createuser -P seb
+# -P vous demandera de saisir un mot de passe
+# -s fera de vous un superutilisateur
+createuser -Ps seb
 
 # Créer une fois pour toutes la base de données laguntzaile dont le
 # propriétaire sera l'utilisateur "seb" (remplacez seb par votre nom
