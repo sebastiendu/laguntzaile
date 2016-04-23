@@ -1,4 +1,4 @@
-# Système de gestion des affectations aux tours de travail
+# Système de gestion des affectations de participants aux tours de travail
 
 
 ## Description fonctionnelle à destination des utilisateurs
