@@ -17,6 +17,7 @@ Homepage: https://github.com/sebastiendu/laguntzaile
 Package: relaidecourriel
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: gestionnairedaffectations
 Description: Relai de courriel du gestionnaire d'affectations
  Robot qui reçoit les messages postés à un lot de destinataires et le relaie
  vers les boites de courriel des personnes du lot.
