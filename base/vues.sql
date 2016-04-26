@@ -465,7 +465,11 @@ affectation.statut as statut_affectation,
 affectation.commentaire as commentaire_affectation,
 id_poste,
 debut,
+debut::date as date_debut,
 fin,
+to_char(debut, 'HHhMI') as heure_debut,
+to_char(fin, 'HHhMI') as heure_fin,
+to_char(fin - debut, 'HHhMI') as duree,
 min,
 max,
 poste.nom as nom_poste,
@@ -634,8 +638,7 @@ from affectation
  join disponibilite on id_disponibilite = disponibilite.id
   join personne on id_personne = personne.id
  join tour on id_tour = tour.id
-  join poste on id_poste = poste.id
-order by poste.id_evenement, affectation.statut, date_et_heure_proposee;
+  join poste on id_poste = poste.id;
 
 
 -- Sollicitation par téléphone
