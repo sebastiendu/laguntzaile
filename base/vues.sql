@@ -580,15 +580,35 @@ from affectation
   join personne on id_personne = personne.id
 order by id_tour, personne.nom, personne.prenom, personne.ville;
 
-create or replace view taux_de_remplissage_par_heure as
-select
- date_trunc('hour', debut + (fin - debut)/2) as heure,
- avg(taux)
-from
- taux_de_remplissage_tour
-group by heure;
 
 -- Gestion des postes, tours, et affectations, pour l'affichage sur le plan
+
+create or replace view nombre_d_affectations_par_tour as
+select
+tour.id as id_tour,
+count(affectation.id)  as nombre_affectations,
+sum(case when affectation.statut = 'possible' then 1 else 0 end) as nombre_affectations_possibles,
+sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affectations_proposees,
+sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees,
+sum(case when affectation.statut in ('rejetee', 'annulee') then 1 else 0 end) as nombre_affectations_rejetees_ou_annulees
+FROM tour left join affectation on tour.id = id_tour
+GROUP BY tour.id;
+
+create or replace view remplissage_par_heure as
+select
+ id_evenement,
+ date_trunc('hour', debut + (fin - debut)/2) as heure, -- heure du milieu du tour
+ sum(min) as min,
+ sum(max) as max,
+ sum(nombre_affectations) as nombre_affectations,
+ sum(nombre_affectations_possibles) as nombre_affectations_possibles,
+ sum(nombre_affectations_proposees) as nombre_affectations_proposees,
+ sum(nombre_affectations_validees_ou_acceptees) as nombre_affectations_validees_ou_acceptees,
+ sum(nombre_affectations_rejetees_ou_annulees) as nombre_affectations_rejetees_ou_annulees
+from tour
+ join nombre_d_affectations_par_tour on id_tour = tour.id
+ join poste on poste.id = id_poste
+group by id_evenement, heure;
 
 create or replace view poste_et_tour as -- pour affichage du plan
 select
@@ -598,20 +618,19 @@ poste.nom,
 poste.description,
 poste.posx,
 poste.posy,
-tour.debut,
 tour.id as id_tour,
+tour.debut,
 tour.fin,
 tour.min,
 tour.max,
-count(affectation.id)  as nombre_affectations,
-sum(case when affectation.statut = 'possible' then 1 else 0 end) as nombre_affectations_possibles,
-sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affectations_proposees,
-sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees,
-sum(case when affectation.statut in ('rejetee', 'annulee') then 1 else 0 end) as nombre_affectations_rejetees_ou_annulees
+nombre_affectations,
+nombre_affectations_possibles,
+nombre_affectations_proposees,
+nombre_affectations_validees_ou_acceptees,
+nombre_affectations_rejetees_ou_annulees
 FROM poste
 left join tour on poste.id = id_poste
-left join affectation on tour.id = id_tour
-GROUP BY poste.id, poste.id_evenement, poste.nom, poste.description, poste.posx, poste.posy, tour.debut, tour.id, tour.fin,tour.min, tour.max;
+left join nombre_d_affectations_par_tour on id_tour = tour.id;
 
 
 -- Demandes de validation des affectations
