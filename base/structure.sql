@@ -20,7 +20,7 @@ create index on evenement(debut);
 
 create table poste(
  id serial primary key,
- id_evenement int references evenement on delete cascade,
+ id_evenement int not null references evenement on delete cascade,
  nom varchar not null,
  description text not null,
  posX decimal not null, -- ou polygone, à voir
@@ -32,7 +32,7 @@ create index on poste(autonome);
 
 create table tour(
  id serial primary key,
- id_poste int references poste on delete cascade,
+ id_poste int not null references poste on delete cascade,
  debut timestamp not null,
  fin timestamp not null,
  min int not null,
