@@ -585,7 +585,7 @@ order by id_tour, personne.nom, personne.prenom, personne.ville;
 
 create or replace view nombre_d_affectations_par_poste as
 select
-id_poste,
+poste.id as id_poste,
 count(affectation.id) as nombre_affectations,
 sum(min) as min,
 sum(max) as max,
@@ -593,8 +593,10 @@ sum(case when affectation.statut = 'possible' then 1 else 0 end) as nombre_affec
 sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affectations_proposees,
 sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees,
 sum(case when affectation.statut in ('rejetee', 'annulee') then 1 else 0 end) as nombre_affectations_rejetees_ou_annulees
-FROM tour left join affectation on tour.id = id_tour
-GROUP BY id_poste;
+FROM poste
+ left join tour on id_poste = poste.id
+  left join affectation on tour.id = id_tour
+GROUP BY poste.id;
 
 create or replace view nombre_d_affectations_par_tour as
 select
