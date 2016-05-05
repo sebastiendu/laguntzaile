@@ -583,9 +583,28 @@ order by id_tour, personne.nom, personne.prenom, personne.ville;
 
 -- Gestion des postes, tours, et affectations, pour l'affichage sur le plan
 
+create or replace view nombre_d_affectations_par_evenement as
+select
+evenement.id as id_evenement,
+count(distinct poste.id) as nombre_poste,
+count(distinct tour.id) as nombre_tours,
+count(affectation.id) as nombre_affectations,
+sum(min) as min,
+sum(max) as max,
+sum(case when affectation.statut = 'possible' then 1 else 0 end) as nombre_affectations_possibles,
+sum(case when affectation.statut = 'proposee' then 1 else 0 end) as nombre_affectations_proposees,
+sum(case when affectation.statut in ('validee', 'acceptee') then 1 else 0 end) as nombre_affectations_validees_ou_acceptees,
+sum(case when affectation.statut in ('rejetee', 'annulee') then 1 else 0 end) as nombre_affectations_rejetees_ou_annulees
+FROM evenement
+ left join poste on id_evenement = evenement.id
+  left join tour on id_poste = poste.id
+   left join affectation on tour.id = id_tour
+GROUP BY evenement.id;
+
 create or replace view nombre_d_affectations_par_poste as
 select
 poste.id as id_poste,
+count(distinct tour.id) as nombre_tours,
 count(affectation.id) as nombre_affectations,
 sum(min) as min,
 sum(max) as max,
