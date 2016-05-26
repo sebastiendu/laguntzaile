@@ -167,13 +167,10 @@ order by
 create or replace view fiches_a_probleme as
 select
  id_evenement,
- evenement.nom as nom_evenement,
- evenement.debut as debut_evenement,
- evenement.fin as fin_evenement,
- evenement.lieu as lieu_evenement,
+ disponibilite.id as id_disponibilite,
  id_personne,
- upper(personne.nom) as nom_personne,
- initcap(personne.prenom) as prenom_personne,
+ nom,
+ prenom,
  adresse,
  code_postal,
  ville,
@@ -189,15 +186,16 @@ select
  liste_amis,
  jours_et_heures_dispo,
  type_poste,
- disponibilite.commentaire as commentaire_disponibilite,
- statut
+ disponibilite.commentaire as commentaire_disponibilite
 from disponibilite
- join evenement on id_evenement = evenement.id
  join personne on id_personne = personne.id
-where disponibilite.id not in (
- select id_disponibilite
- from affectation
-);
+where
+ statut = 'validee'
+ and disponibilite.id not in (
+  select id_disponibilite
+  from affectation
+  where statut not in ('annulee', 'refusee')
+ );
 
 create or replace view export_general_tours as
 select
